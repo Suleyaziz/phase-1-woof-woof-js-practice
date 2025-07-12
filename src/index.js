@@ -1,9 +1,11 @@
-/*window.addEventListener('DOMContentLoaded',()=>{
+    /*
+window.addEventListener('DOMContentLoaded',()=>{
     const dogBar =document.getElementById('dog-bar');
     const dogInfo = document.getElementById('dog-info')
     fetch('http://localhost:3000/pups').then(response=> response.json()).then(data=>{
       data.forEach(dogName=>{
         const name= dogName.name;
+        console.log(name)
         const image = dogName.image;
        const dogStatus= dogName.isGoodDog
 
@@ -42,8 +44,7 @@
 
         })
          })
-     })
-    */
+     });*/
    window.addEventListener('DOMContentLoaded', () => {
     const dogBar = document.getElementById('dog-bar');
     const dogInfo = document.getElementById('dog-info');
@@ -68,22 +69,21 @@
                 dogBar.appendChild(span);
                 
                 span.addEventListener('click', () => {
-                    // Create unique ID for each dog's button
-                    const buttonId = `dog-btn-${dog.id}`;
+
                     
                     dogInfo.innerHTML = `
                         <img src=${dog.image} width="200px"/>
                         <h2>${dog.name}</h2>
-                        <button id="${buttonId}">${dog.isGoodDog ? 'Good Dog!' : 'Bad Dog!'}</button>`;
+                        <button id="dog-btn">${dog.isGoodDog ? 'Good Dog!' : 'Bad Dog!'}</button>`;
                 
-                    const button = document.getElementById(buttonId);
+                    const button = document.getElementById('dog-btn');
                     
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
-                        const newStatus = !dog.isGoodDog;
+                        const newStatus = !dog.isGoodDog;//true or false
                         
                         // Optimistic UI update
-                        button.textContent = newStatus ? 'Good Dog!' : 'Bad Dog!';
+                        button.textContent = newStatus ? 'Good Dog!' : 'Bad Dog!';//if true print good dog if false print bad dog
                         
                         fetch(`http://localhost:3000/pups/${dog.id}`, {
                             method: 'PATCH',
@@ -95,8 +95,6 @@
                         .then(response => response.json())
                         .then(updatedDog => {
                             dog.isGoodDog = updatedDog.isGoodDog;
-                            // Update button text again in case server response differs
-                            button.textContent = updatedDog.isGoodDog ? 'Good Dog!' : 'Bad Dog!';
                         })
                        
                     });
