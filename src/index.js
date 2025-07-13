@@ -45,39 +45,30 @@ window.addEventListener('DOMContentLoaded',()=>{
         })
          })
      });*/
-   window.addEventListener('DOMContentLoaded', () => {
-    const dogBar = document.getElementById('dog-bar');
-    const dogInfo = document.getElementById('dog-info');
+  /*
+document.addEventListener('DOMContentLoaded',()=>{
+    fetch("http://localhost:3000/pups").then(response => response.json()).then(data =>{
+        const dogDiv = document.getElementById('dog-bar');
+        data.forEach(dog =>{
+            const span = document.createElement('span');
+            span.innerHTML= `
+            <span>${dog.name}</span>`;
+            dogDiv.appendChild(span);
+            span.addEventListener('click',()=>{
+                const dogInfoDiv= document.getElementById('dog-info');
+                const image = dog.image;
+                const name= dog.name;
+                const dogStatus = dog.isGoodDog;
 
-    fetch('http://localhost:3000/pups')
-        .then(response => response.json())
-        .then(data => {
-         
-            data.forEach(dog => {
-                 const filterBtn= document.getElementById('good-dog-filter');
-                   let filterOn = false;
-           
-            
-                 filterBtn.addEventListener('click', () => {
-        filterOn = !filterOn; // Toggle filter state
-        filterBtn.textContent = `Filter good dogs: ${filterOn ? 'ON' : 'OFF'}`;
-        
-    
-    });
-                const span = document.createElement("span");
-                span.textContent = dog.name; // Simpler than innerHTML for just text
-                dogBar.appendChild(span);
+                dogInfoDiv.innerHTML=`
+                <img src="${image}" />
+                 <h2>${name}</h2>
+                <button id="dogBtn">${dogStatus ? 'Good Dog!': 'Bad Dog'}</button>
                 
-                span.addEventListener('click', () => {
-
-                    
-                    dogInfo.innerHTML = `
-                        <img src=${dog.image} width="200px"/>
-                        <h2>${dog.name}</h2>
-                        <button id="dog-btn">${dog.isGoodDog ? 'Good Dog!' : 'Bad Dog!'}</button>`;
+                `
+                dogInfoDiv.append;
+                const button = document.getElementById('dogBtn');
                 
-                    const button = document.getElementById('dog-btn');
-                    
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
                         const newStatus = !dog.isGoodDog;//true or false
@@ -95,11 +86,95 @@ window.addEventListener('DOMContentLoaded',()=>{
                         .then(response => response.json())
                         .then(updatedDog => {
                             dog.isGoodDog = updatedDog.isGoodDog;
-                        })
-                       
                     });
-                });
+
+                })
+
+            })
+
+        
+
+        })
+    })
+})
+
+*/
+window.addEventListener('DOMContentLoaded', () => {
+    const dogBar = document.getElementById('dog-bar');
+    const dogInfo = document.getElementById('dog-info');
+    const filterBtn = document.getElementById('good-dog-filter');
+    let filterOn = false;//ON:true OFF:false
+    let allDogs = []; // Store all dogs for filtering
+
+    // Function to render dogs in the dog bar
+    function renderDogs(dogs) {
+        dogBar.innerHTML=``;//this prevents creation of multiple spans when filterBtn is clicked(empties the div)
+        dogs.forEach(dog => {
+            const span = document.createElement("span");
+            span.textContent = dog.name;
+            dogBar.appendChild(span);
+            
+            span.addEventListener('click', () => {
+                displayDogInfo(dog);
             });
+        });
+    }
+
+    // Function to display dog info
+    function displayDogInfo(dog) {
+        dogInfo.innerHTML = `
+            <img src=${dog.image} width="200px"/>
+            <h2>${dog.name}</h2>
+            <button id="dog-btn">${dog.isGoodDog ? 'Good Dog!' : 'Bad Dog!'}</button>`;
+    
+        const button = document.getElementById('dog-btn');
+        
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const newStatus = !dog.isGoodDog;
+            
+            button.textContent = newStatus ? 'Good Dog!' : 'Bad Dog!';
+            
+            fetch(`http://localhost:3000/pups/${dog.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    isGoodDog: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(updatedDog => {
+                // Update the dog in our allDogs array
+                const index = allDogs.findIndex(d => d.id === dog.id);//this checks if the local array and pups are on the same index
+                allDogs[index] = updatedDog;    // then updates accordingly                    
+                dog.isGoodDog = updatedDog.isGoodDog;//updates original dog status to new dog status
+                
+                // renders good dogs if filter is on
+                if (filterOn) {
+                    renderDogs(allDogs.filter(dog => dog.isGoodDog));
+                }
+            });
+        });
+    }
+
+    // Initial fetch of all dogs
+    fetch('http://localhost:3000/pups')
+        .then(response => response.json())
+        .then(data => {
+            allDogs = data;// declares our "data" argument to the empty array
+            renderDogs(allDogs);
         })
         .catch(error => console.error('Fetch error:', error));
+
+    // Filter button event listener
+    filterBtn.addEventListener('click', () => {
+        filterOn = !filterOn;
+        filterBtn.textContent = `Filter good dogs: ${filterOn ? 'ON' : 'OFF'}`;
+        
+        if (filterOn) {
+            renderDogs(allDogs.filter(dog => dog.isGoodDog));
+        } else {
+            renderDogs(allDogs);
+        }
+    });
 });
