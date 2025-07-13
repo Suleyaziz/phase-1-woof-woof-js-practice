@@ -100,22 +100,22 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 */
 window.addEventListener('DOMContentLoaded', () => {
-    const dogBar = document.getElementById('dog-bar');
+    const dogBar = document.getElementById('dog-bar');// gets tags from the html file
     const dogInfo = document.getElementById('dog-info');
     const filterBtn = document.getElementById('good-dog-filter');
-    let filterOn = false;//ON:true OFF:false
+    let filterOn = false;//ON:true OFF:false for filtering
     let allDogs = []; // Store all dogs for filtering
 
     // Function to render dogs in the dog bar
     function renderDogs(dogs) {
         dogBar.innerHTML=``;//this prevents creation of multiple spans when filterBtn is clicked(empties the div)
         dogs.forEach(dog => {
-            const span = document.createElement("span");
-            span.textContent = dog.name;
-            dogBar.appendChild(span);
+            const span = document.createElement("span");// creates an element
+            span.textContent = dog.name;//puts name of dog
+            dogBar.appendChild(span);// updates the index.html
             
-            span.addEventListener('click', () => {
-                displayDogInfo(dog);
+            span.addEventListener('click', () => {//when you click span
+                displayDogInfo(dog);//shows dog info
             });
         });
     }
@@ -127,19 +127,19 @@ window.addEventListener('DOMContentLoaded', () => {
             <h2>${dog.name}</h2>
             <button id="dog-btn">${dog.isGoodDog ? 'Good Dog!' : 'Bad Dog!'}</button>`;
     
-        const button = document.getElementById('dog-btn');
+        const button = document.getElementById('dog-btn');//takes the created button
         
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const newStatus = !dog.isGoodDog;
+        button.addEventListener('click', (e) => {//when clicked
+            e.preventDefault();// prevents page refresh on click
+            const newStatus = !dog.isGoodDog;// inverse the original boolean
             
-            button.textContent = newStatus ? 'Good Dog!' : 'Bad Dog!';
+            button.textContent = newStatus ? 'Good Dog!' : 'Bad Dog!';//conditional for if true or false
             
-            fetch(`http://localhost:3000/pups/${dog.id}`, {
-                method: 'PATCH',
+            fetch(`http://localhost:3000/pups/${dog.id}`, {//fetches pups' id
+                method: 'PATCH',//http verb
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    isGoodDog: newStatus
+                    isGoodDog: newStatus// patching to new dog status
                 })
             })
             .then(response => response.json())
@@ -156,25 +156,25 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
+ // Filter button event listener
+    filterBtn.addEventListener('click', () => {//when clicked
+        filterOn = !filterOn; //changes boolean value
+        filterBtn.textContent = `Filter good dogs: ${filterOn ? 'ON' : 'OFF'}`;//returns under a condition
+        
+        if (filterOn) {//if the vaule is true
+           return  renderDogs(allDogs.filter(dog => dog.isGoodDog));// only the good dogs
+        } else {
+           return  renderDogs(allDogs);
+        }
+    });
     // Initial fetch of all dogs
     fetch('http://localhost:3000/pups')
         .then(response => response.json())
         .then(data => {
-            allDogs = data;// declares our "data" argument to the empty array
-            renderDogs(allDogs);
+            allDogs = data;// declares "data" argument to the local dogs array
+            renderDogs(allDogs);//renders alldogs
         })
-        .catch(error => console.error('Fetch error:', error));
+        .catch(error => console.error('Fetch error:', error));//for any error
 
-    // Filter button event listener
-    filterBtn.addEventListener('click', () => {
-        filterOn = !filterOn;
-        filterBtn.textContent = `Filter good dogs: ${filterOn ? 'ON' : 'OFF'}`;
-        
-        if (filterOn) {
-            renderDogs(allDogs.filter(dog => dog.isGoodDog));
-        } else {
-            renderDogs(allDogs);
-        }
-    });
+   
 });
